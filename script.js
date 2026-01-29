@@ -115,3 +115,67 @@ function sendCustomCommand() {
 function showStatus(message, type = "") {
     statusElement.innerHTML = `<p class="${type}">${message}</p>`;
 }
+
+async function loadPlayersList() {
+    const listContainer = document.getElementById('playerList');
+    const selectedName = document.getElementById('selectedPlayerName');
+    
+    try {
+        listContainer.innerHTML = '<div class="loading-placeholder">Загрузка игроков...</div>';
+
+        const response = await fetch(`${SERVER_URL}/players`);
+        if (!response.ok) throw new Error('Не удалось загрузить список');
+
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error || 'Ошибка сервера');
+
+        listContainer.innerHTML = '';
+
+        if (!data.players || data.players.length === 0) {
+            listContainer.innerHTML = '<div class="no-players">Сейчас никто не в игре...</div>';
+            selectedName.textContent = 'никто';
+            document.getElementById('playerId').value = '';
+            return;
+        }
+
+        data.players.forEach(player => {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            card.dataset.userid = player.id;
+
+            const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${player.id}&size=48x48&format=Png&isCircular=true`;
+
+            card.innerHTML = `
+                <img src="${avatarUrl}" alt="${player.name}" 
+                     onerror="this.src='https://www.roblox.com/headshot-thumbnail/image?userId=1&width=48&height=48&format=png'">
+                <div class="player-info">
+                    <span class="player-name">${player.name}</span>
+                    <span class="player-id">ID: ${player.id}</span>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                // Снимаем выделение со всех
+                document.querySelectorAll('.player-card').forEach(c => c.classList.remove('selected'));
+                // Выделяем текущую
+                card.classList.add('selected');
+                
+                document.getElementById('playerId').value = player.id;
+                selectedName.textContent = player.name;
+            });
+
+            listContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error('Ошибка загрузки игроков:', error);
+        listContainer.innerHTML = `<div class="no-players">Ошибка загрузки: ${error.message}</div>`;
+    }
+}
+
+// Запускаем при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    loadPlayersList();
+    // Автообновление каждые 12 секунд
+    setInterval(loadPlayersList, 12000);
+});
