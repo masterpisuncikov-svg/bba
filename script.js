@@ -117,59 +117,70 @@ function showStatus(message, type = "") {
 }
 
 async function loadPlayersList() {
-    const listContainer = document.getElementById('playerList');
-    const selectedName = document.getElementById('selectedPlayerName');
-    
     try {
-        listContainer.innerHTML = '<div class="loading-placeholder">Загрузка игроков...</div>';
+        playerList.innerHTML = '<div class="no-players">Загрузка игроков...</div>';
 
-        const response = await fetch(`${SERVER_URL}/players`);
-        if (!response.ok) throw new Error('Не удалось загрузить список');
+        const res = await fetch(`${SERVER_URL}/players`);
+        if (!res.ok) throw new Error(`Сервер игроков: HTTP ${res.status}`);
 
-        const data = await response.json();
-        if (!data.success) throw new Error(data.error || 'Ошибка сервера');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'ошибка сервера');
 
-        listContainer.innerHTML = '';
+        playerList.innerHTML = '';
 
-        if (!data.players || data.players.length === 0) {
-            listContainer.innerHTML = '<div class="no-players">Сейчас никто не в игре...</div>';
+        if (data.players.length === 0) {
+            playerList.innerHTML = '<div class="no-players">Никто не в игре...</div>';
             selectedName.textContent = 'никто';
-            document.getElementById('playerId').value = '';
+            playerIdInput.value = '';
             return;
         }
 
-        data.players.forEach(player => {
+        for (const p of data.players) {
             const card = document.createElement('div');
             card.className = 'player-card';
-            card.dataset.userid = player.id;
+            card.dataset.userid = p.id;
 
-            const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${player.id}&size=48x48&format=Png&isCircular=true`;
+            // ─── Получаем реальную аватарку ───
+            let avatarUrl = 'https://www.roblox.com/headshot-thumbnail/image?userId=1&width=48&height=48&format=png'; // fallback
+
+            try {
+                const thumbRes = await fetch(
+                    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${p.id}&size=48x48&format=Png&isCircular=true`
+                );
+                if (thumbRes.ok) {
+                    const thumbData = await thumbRes.json();
+                    if (thumbData.data?.[0]?.state === 'Completed' && thumbData.data[0].imageUrl) {
+                        avatarUrl = thumbData.data[0].imageUrl;
+                    } else if (thumbData.data?.[0]?.state === 'Pending') {
+                        // Можно показать "загрузка" или оставить fallback
+                    }
+                }
+            } catch (thumbErr) {
+                console.warn(`Аватарка ${p.id} не загрузилась:`, thumbErr);
+            }
 
             card.innerHTML = `
-                <img src="${avatarUrl}" alt="${player.name}" 
+                <img src="${avatarUrl}" alt="${p.name}"
                      onerror="this.src='https://www.roblox.com/headshot-thumbnail/image?userId=1&width=48&height=48&format=png'">
                 <div class="player-info">
-                    <span class="player-name">${player.name}</span>
-                    <span class="player-id">ID: ${player.id}</span>
+                    <span class="player-name">${p.name}</span>
+                    <span class="player-id">ID: ${p.id}</span>
                 </div>
             `;
 
-            card.addEventListener('click', () => {
-                // Снимаем выделение со всех
+            card.onclick = () => {
                 document.querySelectorAll('.player-card').forEach(c => c.classList.remove('selected'));
-                // Выделяем текущую
                 card.classList.add('selected');
-                
-                document.getElementById('playerId').value = player.id;
-                selectedName.textContent = player.name;
-            });
+                playerIdInput.value = p.id;
+                selectedName.textContent = p.name;
+            };
 
-            listContainer.appendChild(card);
-        });
+            playerList.appendChild(card);
+        }
 
-    } catch (error) {
-        console.error('Ошибка загрузки игроков:', error);
-        listContainer.innerHTML = `<div class="no-players">Ошибка загрузки: ${error.message}</div>`;
+    } catch (err) {
+        playerList.innerHTML = `<div class="no-players">Ошибка загрузки: ${err.message}</div>`;
+        console.error(err);
     }
 }
 
