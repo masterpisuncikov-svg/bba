@@ -1,6 +1,6 @@
 // === КОНФИГУРАЦИЯ ===
 // ЗАМЕНИТЕ ЭТОТ URL на ваш Replit/Glitch сервер
-const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app";
+const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app/";
 // ====================
 
 // Элементы DOM
