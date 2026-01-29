@@ -266,10 +266,10 @@ async function loadPlayersList() {
         playerList.innerHTML = '<div class="no-players">Загрузка игроков...</div>';
 
         const res = await fetch(`${SERVER_URL}/players`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error(`Сервер игроков: HTTP ${res.status}`);
 
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'ошибка');
+        if (!data.success) throw new Error(data.error || 'ошибка сервера');
 
         playerList.innerHTML = '';
 
@@ -280,15 +280,32 @@ async function loadPlayersList() {
             return;
         }
 
-        data.players.forEach(p => {
+        for (const p of data.players) {
             const card = document.createElement('div');
             card.className = 'player-card';
             card.dataset.userid = p.id;
 
-            const avatar = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${p.id}&size=48x48&format=Png&isCircular=true`;
+            // ─── Получаем реальную аватарку ───
+            let avatarUrl = 'https://www.roblox.com/headshot-thumbnail/image?userId=1&width=48&height=48&format=png'; // fallback
+
+            try {
+                const thumbRes = await fetch(
+                    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${p.id}&size=48x48&format=Png&isCircular=true`
+                );
+                if (thumbRes.ok) {
+                    const thumbData = await thumbRes.json();
+                    if (thumbData.data?.[0]?.state === 'Completed' && thumbData.data[0].imageUrl) {
+                        avatarUrl = thumbData.data[0].imageUrl;
+                    } else if (thumbData.data?.[0]?.state === 'Pending') {
+                        // Можно показать "загрузка" или оставить fallback
+                    }
+                }
+            } catch (thumbErr) {
+                console.warn(`Аватарка ${p.id} не загрузилась:`, thumbErr);
+            }
 
             card.innerHTML = `
-                <img src="${avatar}" alt="${p.name}"
+                <img src="${avatarUrl}" alt="${p.name}"
                      onerror="this.src='https://www.roblox.com/headshot-thumbnail/image?userId=1&width=48&height=48&format=png'">
                 <div class="player-info">
                     <span class="player-name">${p.name}</span>
@@ -304,14 +321,13 @@ async function loadPlayersList() {
             };
 
             playerList.appendChild(card);
-        });
+        }
 
     } catch (err) {
-        playerList.innerHTML = `<div class="no-players">Ошибка: ${err.message}</div>`;
+        playerList.innerHTML = `<div class="no-players">Ошибка загрузки: ${err.message}</div>`;
         console.error(err);
     }
 }
-
 async function checkServerStatus() {
     try {
         const res = await fetch(`${SERVER_URL}/status`);
