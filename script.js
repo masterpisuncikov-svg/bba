@@ -1,6 +1,6 @@
 // === КОНФИГУРАЦИЯ ===
 // ЗАМЕНИТЕ ЭТОТ URL на ваш Replit/Glitch сервер
-const SERVER_URL = "https://ваш-сервер.ваш-ник.repl.co";
+const SERVER_URL = "https://workspace.masterpisunciko.repl.co/";
 // ====================
 
 // Элементы DOM
