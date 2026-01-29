@@ -1,104 +1,117 @@
 // === КОНФИГУРАЦИЯ ===
-// ЗАМЕНИТЕ ЭТОТ URL на ваш Replit/Glitch сервер
-const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app/";
+const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app";  // без слеша в конце
 // ====================
 
-// Элементы DOM
 const statusElement = document.getElementById('status');
 const serverUrlElement = document.getElementById('serverUrl');
+const playerIdInput = document.getElementById('playerId');
 let lastStatusCheck = null;
+let isSending = false; // защита от спама
 
-// Инициализация
-document.addEventListener('DOMContentLoaded', function() {
-    serverUrlElement.textContent = SERVER_URL || "Не указан";
+document.addEventListener('DOMContentLoaded', () => {
+    serverUrlElement.textContent = SERVER_URL;
     checkServerStatus();
+    setInterval(checkServerStatusIfNeeded, 30000);
 });
 
-// Проверка статуса сервера
 async function checkServerStatus() {
-    if (!SERVER_URL || SERVER_URL.includes("ваш-сервер")) {
-        showStatus("❌ URL сервера не настроен. Откройте script.js и укажите ваш URL Replit/Glitch", "error");
+    if (!SERVER_URL) {
+        showStatus("❌ URL сервера не указан в script.js", "error");
         return;
     }
-    
-    showStatus("🔍 Проверяю соединение с сервером...", "loading");
-    
+
+    showStatus("🔍 Проверка сервера...", "loading");
+
     try {
-        const response = await fetch(`${SERVER_URL}/status`);
-        if (response.ok) {
-            const data = await response.json();
-            showStatus(`✅ Сервер работает!<br>Игроков: ${data.players || 0}<br>Время: ${new Date().toLocaleTimeString()}`, "success");
-            lastStatusCheck = new Date();
-        } else {
-            showStatus("❌ Сервер не отвечает (ошибка HTTP)", "error");
-        }
-    } catch (error) {
-        showStatus(`❌ Ошибка подключения: ${error.message}`, "error");
-        console.error("Ошибка проверки сервера:", error);
+        const res = await fetch(`${SERVER_URL}/status`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        showStatus(
+            `✅ Сервер онлайн<br>` +
+            `Игроков онлайн: ${data.playersOnline || 0}<br>` +
+            `Ожидающих команд: ${data.pendingCommands || 0}<br>` +
+            `Время: ${new Date(data.timestamp).toLocaleString()}`,
+            "success"
+        );
+        lastStatusCheck = Date.now();
+    } catch (err) {
+        showStatus(`❌ Нет связи с сервером<br>${err.message}`, "error");
+        console.error(err);
     }
 }
 
-// Отправить команду
-async function sendCommand(action, value) {
-    const playerId = document.getElementById('playerId').value;
-    
-    if (!playerId) {
-        showStatus("⚠️ Введите Player ID", "error");
+function checkServerStatusIfNeeded() {
+    if (!lastStatusCheck || Date.now() - lastStatusCheck > 45000) {
+        checkServerStatus();
+    }
+}
+
+async function sendCommand(action, value = null) {
+    if (isSending) return;
+    isSending = true;
+
+    const playerIdRaw = playerIdInput.value.trim();
+    if (!playerIdRaw) {
+        showStatus("⚠️ Введите Player ID / UserId", "error");
+        isSending = false;
         return;
     }
-    
-    showStatus(`📤 Отправка команды: ${action}=${value} для игрока ${playerId}...`, "loading");
-    
+
+    const playerId = String(playerIdRaw); // всегда строка
+
+    showStatus(`📤 Отправка: ${action} → ${playerId} ...`, "loading");
+
     try {
-        const response = await fetch(`${SERVER_URL}/command`, {
+        const res = await fetch(`${SERVER_URL}/command`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                playerId: playerId,
-                action: action,
-                value: value,
+                playerId,
+                action,
+                value,          // может быть string, number, object
                 timestamp: Date.now()
             })
         });
-        
-        const data = await response.json();
-        
+
+        const data = await res.json();
+
         if (data.success) {
-            showStatus(`✅ Команда отправлена!<br>ID: ${data.commandId}<br>Ожидайте выполнения в игре`, "success");
-            // Автоматически проверяем статус через 2 секунды
-            setTimeout(checkServerStatus, 2000);
+            showStatus(
+                `✅ Успех!<br>Команда: ${action}<br>ID: ${data.commandId}<br>Для игрока: ${playerId}`,
+                "success"
+            );
+            setTimeout(checkServerStatus, 1500);
         } else {
-            showStatus(`❌ Ошибка: ${data.message || "Неизвестная ошибка"}`, "error");
+            showStatus(`❌ Ошибка: ${data.error || data.message || "неизвестно"}`, "error");
         }
-    } catch (error) {
-        showStatus(`❌ Ошибка отправки: ${error.message}`, "error");
-        console.error("Ошибка отправки команды:", error);
+    } catch (err) {
+        showStatus(`❌ Ошибка сети: ${err.message}`, "error");
+        console.error(err);
+    } finally {
+        isSending = false;
     }
 }
 
-// Отправить кастомную команду
 function sendCustomCommand() {
-    const action = document.getElementById('customAction').value;
-    const value = document.getElementById('customValue').value;
-    
+    const action = document.getElementById('customAction').value.trim();
+    let value = document.getElementById('customValue').value.trim();
+
     if (!action) {
-        showStatus("⚠️ Введите название команды", "error");
+        showStatus("⚠️ Введите название команды (action)", "error");
         return;
     }
-    
-    sendCommand(action, value);
+
+    // Пытаемся распарсить value как JSON, если выглядит как объект
+    try {
+        if (value.startsWith('{') || value.startsWith('[')) {
+            value = JSON.parse(value);
+        }
+    } catch {}
+
+    sendCommand(action, value || null);
 }
 
-// Показать статус
 function showStatus(message, type = "") {
     statusElement.innerHTML = `<p class="${type}">${message}</p>`;
 }
-
-// Периодическая проверка статуса (каждые 30 секунд)
-setInterval(() => {
-    if (lastStatusCheck && (Date.now() - lastStatusCheck) > 30000) {
-        checkServerStatus();
-    }
-}, 30000);
