@@ -6,8 +6,12 @@
     <title>Roblox Admin Panel</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <style>
-        /* твой предыдущий CSS остаётся полностью */
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto',sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
         body {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
@@ -15,85 +19,163 @@
             padding: 20px;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        header { text-align:center; margin-bottom:40px; padding-bottom:20px; border-bottom:2px solid #00adb5; }
-        h1 { color:#00adb5; font-size:2.5em; margin-bottom:10px; }
-        .subtitle { color:#a0a0a0; font-size:1.1em; }
-        .panel { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:30px; margin-bottom:40px; }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00adb5;
+        }
+        h1 { color: #00adb5; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { color: #a0a0a0; font-size: 1.1em; }
+
+        .panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
         .player-section, .commands-section, .status-section {
-            background:rgba(30,30,46,0.7);
-            padding:25px;
-            border-radius:15px;
-            border:1px solid rgba(255,255,255,0.05);
+            background: rgba(30, 30, 46, 0.7);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        h2 { color:#00adb5; margin-bottom:20px; font-size:1.5em; display:flex; align-items:center; gap:10px; }
-        .input-group { margin-bottom:20px; }
-        label { display:block; margin-bottom:8px; color:#a0a0a0; font-weight:500; }
-        select, input {
-            width:100%;
-            padding:12px 15px;
-            background:rgba(255,255,255,0.1);
-            border:1px solid rgba(255,255,255,0.2);
-            border-radius:8px;
-            color:white;
-            font-size:16px;
+
+        h2 {
+            color: #00adb5;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
-        select:focus, input:focus {
-            outline:none;
-            border-color:#00adb5;
-            box-shadow:0 0 0 2px rgba(0,173,181,0.2);
+
+        .player-list {
+            max-height: 340px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            background: rgba(20,20,35,0.4);
+            padding: 8px;
         }
+
+        .player-card {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .player-card:hover {
+            background: rgba(255,255,255,0.12);
+            transform: translateX(4px);
+        }
+
+        .player-card.selected {
+            background: rgba(0,173,181,0.25);
+            border-left: 4px solid #00adb5;
+        }
+
+        .player-card img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            margin-right: 14px;
+            object-fit: cover;
+            border: 2px solid rgba(0,173,181,0.4);
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #e0f7fa;
+            display: block;
+            font-size: 1.05em;
+        }
+
+        .player-id {
+            font-size: 0.85em;
+            color: #a0a0c0;
+        }
+
+        .no-players {
+            text-align: center;
+            padding: 60px 20px;
+            color: #777;
+            font-style: italic;
+        }
+
+        .selected-info {
+            margin-top: 16px;
+            padding: 10px;
+            background: rgba(0,173,181,0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
         .buttons-grid {
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-            gap:12px;
-            margin-top:20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
         }
+
         .btn {
-            padding:14px 20px;
-            border:none;
-            border-radius:10px;
-            font-size:15px;
-            font-weight:600;
-            cursor:pointer;
-            transition:all 0.25s ease;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:8px;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
         }
-        .btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.3); }
-        .btn:active { transform:translateY(0); }
-        .btn-kill    { background:linear-gradient(135deg,#f44336,#d32f2f); color:white; }
-        .btn-speedup { background:linear-gradient(135deg,#ff9800,#f57c00); color:white; }
-        .btn-reset   { background:linear-gradient(135deg,#4caf50,#2e7d32); color:white; }
-        .btn-custom  { background:linear-gradient(135deg,#2196f3,#1976d2); color:white; margin-top:16px; width:100%; }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-kill    { background: linear-gradient(135deg, #f44336, #d32f2f); color: white; }
+        .btn-speedup { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+        .btn-reset   { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; }
+        .btn-custom  { background: linear-gradient(135deg, #2196f3, #1976d2); color: white; width: 100%; margin-top: 16px; }
+
+        .input-group { margin: 15px 0; }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+        }
+
         .status-box {
-            background:rgba(0,0,0,0.3);
-            padding:20px;
-            border-radius:10px;
-            min-height:100px;
-            border:1px solid rgba(255,255,255,0.1);
-            margin-top:20px;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 120px;
         }
-        #status p { margin-bottom:10px; line-height:1.6; }
-        .loading { animation:pulse 1.5s infinite; }
+
+        .success { color: #4caf50; }
+        .error   { color: #f44336; }
+        .loading { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%,100% {opacity:1;} 50% {opacity:0.6;} }
-        .success { color:#4caf50; }
-        .error   { color:#f44336; }
+
         footer {
-            text-align:center;
-            margin-top:40px;
-            color:#888;
-            font-size:0.9em;
+            text-align: center;
+            margin-top: 40px;
+            color: #888;
         }
     </style>
 </head>
@@ -102,54 +184,53 @@
 <div class="container">
     <header>
         <h1>Roblox Admin Panel</h1>
-        <div class="subtitle">Управление игроками через веб-интерфейс</div>
+        <div class="subtitle">Управление игроками в реальном времени</div>
     </header>
 
     <div class="panel">
-        <!-- Выбор игрока -->
+        <!-- Список игроков -->
         <div class="player-section">
-            <h2>🎯 Выберите игрока</h2>
-            <div class="input-group">
-                <label for="playerSelect">Игрок:</label>
-                <select id="playerSelect">
-                    <option value="">— выберите игрока —</option>
-                    <!-- Игроки будут добавляться динамически через JS -->
-                </select>
+            <h2>🎮 Игроки онлайн</h2>
+            
+            <div id="playerList" class="player-list">
+                <div class="no-players">Загрузка...</div>
             </div>
-            <small>Или введите UserId вручную ниже</small>
-            <div class="input-group" style="margin-top:12px;">
-                <label for="playerId">Ручной ввод UserId:</label>
-                <input type="text" id="playerId" placeholder="10987654321" />
+
+            <div class="selected-info">
+                <strong>Выбран: </strong>
+                <span id="selectedPlayerName">никто</span>
+                <input type="hidden" id="playerId" value="">
             </div>
         </div>
 
-        <!-- Готовые команды -->
+        <!-- Команды -->
         <div class="commands-section">
             <h2>⚡ Быстрые команды</h2>
             <div class="buttons-grid">
                 <button class="btn btn-kill"    onclick="sendPreset('kill', null)">💀 Kill</button>
                 <button class="btn btn-speedup" onclick="sendPreset('speed', 1000)">🚀 Speed ×1000</button>
-                <button class="btn btn-reset"   onclick="sendPreset('speed', 1)">🔄 Speed ×1 (норма)</button>
+                <button class="btn btn-reset"   onclick="sendPreset('speed', 1)">🔄 Speed ×1</button>
             </div>
 
-            <!-- Кастомная команда -->
             <div class="custom-command" style="margin-top:24px;">
                 <h3>Кастомная команда</h3>
-                <div class="input-group" style="display:flex; gap:10px;">
-                    <input type="text" id="customAction" placeholder="название команды (jump, fly...)" />
-                    <input type="text" id="customValue" placeholder="значение (опционально)" />
+                <div class="input-group">
+                    <input type="text" id="customAction" placeholder="action (например: give_coins)" />
                 </div>
-                <button class="btn btn-custom" onclick="sendCustomCommand()">Отправить кастомную</button>
+                <div class="input-group">
+                    <input type="text" id="customValue" placeholder="value (число, строка, JSON...)" />
+                </div>
+                <button class="btn btn-custom" onclick="sendCustomCommand()">Отправить</button>
             </div>
         </div>
 
         <!-- Статус -->
         <div class="status-section">
-            <h2>📡 Статус</h2>
+            <h2>📡 Статус сервера</h2>
             <div class="status-box" id="status">
                 <p>Ожидание...</p>
             </div>
-            <button class="btn btn-info" onclick="checkServerStatus()" style="margin-top:16px;">
+            <button class="btn" style="margin-top:16px; background:#2196f3; color:white; width:100%;" onclick="checkServerStatus()">
                 Обновить статус
             </button>
         </div>
@@ -157,99 +238,133 @@
 
     <footer>
         Сервер: <span id="serverUrl">загружается...</span><br>
-        <small>Создано для быстрого администрирования Roblox-игры</small>
+        <small>Обновление списка каждые 12 сек</small>
     </footer>
 </div>
 
 <script>
-// === КОНФИГУРАЦИЯ ===
-const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app";  // без / в конце
+const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app";
 
-const statusElement   = document.getElementById('status');
-const serverUrlElement = document.getElementById('serverUrl');
-const playerSelect    = document.getElementById('playerSelect');
-const playerIdInput   = document.getElementById('playerId');
+const statusEl     = document.getElementById('status');
+const serverUrlEl  = document.getElementById('serverUrl');
+const playerList   = document.getElementById('playerList');
+const selectedName = document.getElementById('selectedPlayerName');
+const playerIdInput = document.getElementById('playerId');
 
 let isSending = false;
-let lastStatusCheck = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    serverUrlElement.textContent = SERVER_URL;
+    serverUrlEl.textContent = SERVER_URL;
+    loadPlayersList();
     checkServerStatus();
-    loadPlayers();           // ← добавлено
+    setInterval(loadPlayersList, 12000);
     setInterval(checkServerStatusIfNeeded, 30000);
 });
 
-// Заглушка — список игроков (можно заменить на реальный запрос к серверу)
-function loadPlayers() {
-    // Пока статический список для примера
-    // В будущем здесь можно сделать GET /players → массив игроков
-    const fakePlayers = [
-        { id: "123456789", name: "CoolPlayer123" },
-        { id: "987654321", name: "NoobMaster69"  },
-        { id: "555555555", name: "xXProGamerXx"  },
-        { id: "111111111", name: "TestUser"      },
-    ];
+async function loadPlayersList() {
+    try {
+        playerList.innerHTML = '<div class="no-players">Загрузка игроков...</div>';
 
-    playerSelect.innerHTML = '<option value="">— выберите игрока —</option>';
-    fakePlayers.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = `${p.name} (${p.id})`;
-        playerSelect.appendChild(opt);
-    });
+        const res = await fetch(`${SERVER_URL}/players`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // При выборе в select → копируем в input
-    playerSelect.addEventListener('change', () => {
-        playerIdInput.value = playerSelect.value;
-    });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'ошибка');
+
+        playerList.innerHTML = '';
+
+        if (data.players.length === 0) {
+            playerList.innerHTML = '<div class="no-players">Никто не в игре...</div>';
+            selectedName.textContent = 'никто';
+            playerIdInput.value = '';
+            return;
+        }
+
+        data.players.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            card.dataset.userid = p.id;
+
+            const avatar = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${p.id}&size=48x48&format=Png&isCircular=true`;
+
+            card.innerHTML = `
+                <img src="${avatar}" alt="${p.name}"
+                     onerror="this.src='https://www.roblox.com/headshot-thumbnail/image?userId=1&width=48&height=48&format=png'">
+                <div class="player-info">
+                    <span class="player-name">${p.name}</span>
+                    <span class="player-id">ID: ${p.id}</span>
+                </div>
+            `;
+
+            card.onclick = () => {
+                document.querySelectorAll('.player-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                playerIdInput.value = p.id;
+                selectedName.textContent = p.name;
+            };
+
+            playerList.appendChild(card);
+        });
+
+    } catch (err) {
+        playerList.innerHTML = `<div class="no-players">Ошибка: ${err.message}</div>`;
+        console.error(err);
+    }
 }
 
-async function checkServerStatus() { /* ... твой предыдущий код без изменений ... */ }
-
-function checkServerStatusIfNeeded() { /* ... твой предыдущий код ... */ }
-
-async function sendPreset(action, value) {
-    const playerId = playerIdInput.value.trim() || playerSelect.value;
-    if (!playerId) {
-        showStatus("⚠️ Выберите игрока или введите ID", "error");
-        return;
+async function checkServerStatus() {
+    try {
+        const res = await fetch(`${SERVER_URL}/status`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        statusEl.innerHTML = `
+            <p class="success">✅ Онлайн<br>
+            Игроков: ${data.playersOnline || 0}<br>
+            Команд в очереди: ${data.pendingCommands || 0}</p>
+        `;
+    } catch (err) {
+        statusEl.innerHTML = `<p class="error">❌ Нет связи: ${err.message}</p>`;
     }
-    await sendCommand(action, value);
+}
+
+function checkServerStatusIfNeeded() {
+    // можно добавить логику, если давно не проверяли
+    checkServerStatus();
 }
 
 async function sendCommand(action, value = null) {
     if (isSending) return;
     isSending = true;
 
-    const playerId = (playerIdInput.value.trim() || playerSelect.value).trim();
+    const playerId = playerIdInput.value.trim();
     if (!playerId) {
-        showStatus("⚠️ Укажите игрока", "error");
+        statusEl.innerHTML = '<p class="error">⚠️ Выберите игрока!</p>';
         isSending = false;
         return;
     }
-
-    showStatus(`📤 ${action} → ${playerId} ...`, "loading");
 
     try {
         const res = await fetch(`${SERVER_URL}/command`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ playerId, action, value, sentAt: Date.now() })
+            body: JSON.stringify({ playerId, action, value })
         });
 
         const data = await res.json();
         if (data.success) {
-            showStatus(`✅ ${action} отправлено (ID: ${data.commandId})`, "success");
-            setTimeout(checkServerStatus, 1400);
+            statusEl.innerHTML = `<p class="success">✅ Отправлено: ${action} (ID: ${data.commandId})</p>`;
         } else {
-            showStatus(`❌ ${data.error || "ошибка сервера"}`, "error");
+            statusEl.innerHTML = `<p class="error">❌ ${data.error || 'ошибка'}</p>`;
         }
     } catch (err) {
-        showStatus(`❌ ${err.message}`, "error");
+        statusEl.innerHTML = `<p class="error">❌ Сеть: ${err.message}</p>`;
     } finally {
         isSending = false;
     }
+}
+
+function sendPreset(action, value) {
+    sendCommand(action, value);
 }
 
 function sendCustomCommand() {
@@ -257,7 +372,7 @@ function sendCustomCommand() {
     let value = document.getElementById('customValue').value.trim();
 
     if (!action) {
-        showStatus("Введите название команды", "error");
+        statusEl.innerHTML = '<p class="error">Введите action</p>';
         return;
     }
 
@@ -265,13 +380,9 @@ function sendCustomCommand() {
         if (value && (value.startsWith('{') || value.startsWith('['))) {
             value = JSON.parse(value);
         }
-    } catch {}
+    } catch (e) {}
 
     sendCommand(action, value || null);
-}
-
-function showStatus(message, type = "") {
-    statusElement.innerHTML = `<p class="${type}">${message}</p>`;
 }
 </script>
 </body>
