@@ -1,73 +1,278 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Контрольная Панель</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Roblox Admin Panel</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <style>
+        /* твой предыдущий CSS остаётся полностью */
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Roboto',sans-serif; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        header { text-align:center; margin-bottom:40px; padding-bottom:20px; border-bottom:2px solid #00adb5; }
+        h1 { color:#00adb5; font-size:2.5em; margin-bottom:10px; }
+        .subtitle { color:#a0a0a0; font-size:1.1em; }
+        .panel { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:30px; margin-bottom:40px; }
+        .player-section, .commands-section, .status-section {
+            background:rgba(30,30,46,0.7);
+            padding:25px;
+            border-radius:15px;
+            border:1px solid rgba(255,255,255,0.05);
+        }
+        h2 { color:#00adb5; margin-bottom:20px; font-size:1.5em; display:flex; align-items:center; gap:10px; }
+        .input-group { margin-bottom:20px; }
+        label { display:block; margin-bottom:8px; color:#a0a0a0; font-weight:500; }
+        select, input {
+            width:100%;
+            padding:12px 15px;
+            background:rgba(255,255,255,0.1);
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:8px;
+            color:white;
+            font-size:16px;
+        }
+        select:focus, input:focus {
+            outline:none;
+            border-color:#00adb5;
+            box-shadow:0 0 0 2px rgba(0,173,181,0.2);
+        }
+        .buttons-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+            gap:12px;
+            margin-top:20px;
+        }
+        .btn {
+            padding:14px 20px;
+            border:none;
+            border-radius:10px;
+            font-size:15px;
+            font-weight:600;
+            cursor:pointer;
+            transition:all 0.25s ease;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+        }
+        .btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+        .btn:active { transform:translateY(0); }
+        .btn-kill    { background:linear-gradient(135deg,#f44336,#d32f2f); color:white; }
+        .btn-speedup { background:linear-gradient(135deg,#ff9800,#f57c00); color:white; }
+        .btn-reset   { background:linear-gradient(135deg,#4caf50,#2e7d32); color:white; }
+        .btn-custom  { background:linear-gradient(135deg,#2196f3,#1976d2); color:white; margin-top:16px; width:100%; }
+        .status-box {
+            background:rgba(0,0,0,0.3);
+            padding:20px;
+            border-radius:10px;
+            min-height:100px;
+            border:1px solid rgba(255,255,255,0.1);
+            margin-top:20px;
+        }
+        #status p { margin-bottom:10px; line-height:1.6; }
+        .loading { animation:pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100% {opacity:1;} 50% {opacity:0.6;} }
+        .success { color:#4caf50; }
+        .error   { color:#f44336; }
+        footer {
+            text-align:center;
+            margin-top:40px;
+            color:#888;
+            font-size:0.9em;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎮 Roblox Контрольная Панель</h1>
-            <p class="subtitle">Управляйте игрой через веб-интерфейс</p>
-        </header>
-        
-        <div class="panel">
-            <div class="player-section">
-                <h2>👤 Игрок</h2>
-                <div class="input-group">
-                    <label for="playerId">Roblox User ID:</label>
-                    <input type="number" id="playerId" placeholder="123456789" value="1">
-                    <small>Введите ID игрока (можно получить в Roblox)</small>
-                </div>
+
+<div class="container">
+    <header>
+        <h1>Roblox Admin Panel</h1>
+        <div class="subtitle">Управление игроками через веб-интерфейс</div>
+    </header>
+
+    <div class="panel">
+        <!-- Выбор игрока -->
+        <div class="player-section">
+            <h2>🎯 Выберите игрока</h2>
+            <div class="input-group">
+                <label for="playerSelect">Игрок:</label>
+                <select id="playerSelect">
+                    <option value="">— выберите игрока —</option>
+                    <!-- Игроки будут добавляться динамически через JS -->
+                </select>
             </div>
-            
-            <div class="commands-section">
-                <h2>⚡ Команды</h2>
-                <div class="buttons-grid">
-                    <button class="btn btn-primary" onclick="sendCommand('give_coins', 100)">
-                        💰 Дать 100 монет
-                    </button>
-                    <button class="btn btn-success" onclick="sendCommand('teleport', 'spawn')">
-                        🚀 Телепорт на спавн
-                    </button>
-                    <button class="btn btn-warning" onclick="sendCommand('heal', 50)">
-                        ❤️ Вылечить на 50 HP
-                    </button>
-                    <button class="btn btn-danger" onclick="sendCommand('announce', '')">
-                        📢 Объявление в чат
-                    </button>
-                </div>
-                
-                <div class="custom-command">
-                    <h3>🎯 Кастомная команда</h3>
-                    <div class="input-group">
-                        <input type="text" id="customAction" placeholder="имя_команды" value="set_score">
-                        <input type="text" id="customValue" placeholder="значение" value="1000">
-                        <button class="btn" onclick="sendCustomCommand()">Отправить</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="status-section">
-                <h2>📊 Статус</h2>
-                <div id="status" class="status-box">
-                    <p>⏳ Ожидание подключения...</p>
-                </div>
-                <button class="btn btn-info" onclick="checkServerStatus()">
-                    🔄 Проверить сервер
-                </button>
+            <small>Или введите UserId вручную ниже</small>
+            <div class="input-group" style="margin-top:12px;">
+                <label for="playerId">Ручной ввод UserId:</label>
+                <input type="text" id="playerId" placeholder="10987654321" />
             </div>
         </div>
-        
-        <footer>
-            <p>Сервер: <span id="serverUrl">Не указан</span></p>
-            <p class="hint">⚠️ Не забудьте указать URL вашего сервера в script.js</p>
-        </footer>
+
+        <!-- Готовые команды -->
+        <div class="commands-section">
+            <h2>⚡ Быстрые команды</h2>
+            <div class="buttons-grid">
+                <button class="btn btn-kill"    onclick="sendPreset('kill', null)">💀 Kill</button>
+                <button class="btn btn-speedup" onclick="sendPreset('speed', 1000)">🚀 Speed ×1000</button>
+                <button class="btn btn-reset"   onclick="sendPreset('speed', 1)">🔄 Speed ×1 (норма)</button>
+            </div>
+
+            <!-- Кастомная команда -->
+            <div class="custom-command" style="margin-top:24px;">
+                <h3>Кастомная команда</h3>
+                <div class="input-group" style="display:flex; gap:10px;">
+                    <input type="text" id="customAction" placeholder="название команды (jump, fly...)" />
+                    <input type="text" id="customValue" placeholder="значение (опционально)" />
+                </div>
+                <button class="btn btn-custom" onclick="sendCustomCommand()">Отправить кастомную</button>
+            </div>
+        </div>
+
+        <!-- Статус -->
+        <div class="status-section">
+            <h2>📡 Статус</h2>
+            <div class="status-box" id="status">
+                <p>Ожидание...</p>
+            </div>
+            <button class="btn btn-info" onclick="checkServerStatus()" style="margin-top:16px;">
+                Обновить статус
+            </button>
+        </div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <footer>
+        Сервер: <span id="serverUrl">загружается...</span><br>
+        <small>Создано для быстрого администрирования Roblox-игры</small>
+    </footer>
+</div>
+
+<script>
+// === КОНФИГУРАЦИЯ ===
+const SERVER_URL = "https://early-hopeful-characters--masterpisunciko.replit.app";  // без / в конце
+
+const statusElement   = document.getElementById('status');
+const serverUrlElement = document.getElementById('serverUrl');
+const playerSelect    = document.getElementById('playerSelect');
+const playerIdInput   = document.getElementById('playerId');
+
+let isSending = false;
+let lastStatusCheck = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    serverUrlElement.textContent = SERVER_URL;
+    checkServerStatus();
+    loadPlayers();           // ← добавлено
+    setInterval(checkServerStatusIfNeeded, 30000);
+});
+
+// Заглушка — список игроков (можно заменить на реальный запрос к серверу)
+function loadPlayers() {
+    // Пока статический список для примера
+    // В будущем здесь можно сделать GET /players → массив игроков
+    const fakePlayers = [
+        { id: "123456789", name: "CoolPlayer123" },
+        { id: "987654321", name: "NoobMaster69"  },
+        { id: "555555555", name: "xXProGamerXx"  },
+        { id: "111111111", name: "TestUser"      },
+    ];
+
+    playerSelect.innerHTML = '<option value="">— выберите игрока —</option>';
+    fakePlayers.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.id})`;
+        playerSelect.appendChild(opt);
+    });
+
+    // При выборе в select → копируем в input
+    playerSelect.addEventListener('change', () => {
+        playerIdInput.value = playerSelect.value;
+    });
+}
+
+async function checkServerStatus() { /* ... твой предыдущий код без изменений ... */ }
+
+function checkServerStatusIfNeeded() { /* ... твой предыдущий код ... */ }
+
+async function sendPreset(action, value) {
+    const playerId = playerIdInput.value.trim() || playerSelect.value;
+    if (!playerId) {
+        showStatus("⚠️ Выберите игрока или введите ID", "error");
+        return;
+    }
+    await sendCommand(action, value);
+}
+
+async function sendCommand(action, value = null) {
+    if (isSending) return;
+    isSending = true;
+
+    const playerId = (playerIdInput.value.trim() || playerSelect.value).trim();
+    if (!playerId) {
+        showStatus("⚠️ Укажите игрока", "error");
+        isSending = false;
+        return;
+    }
+
+    showStatus(`📤 ${action} → ${playerId} ...`, "loading");
+
+    try {
+        const res = await fetch(`${SERVER_URL}/command`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playerId, action, value, sentAt: Date.now() })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            showStatus(`✅ ${action} отправлено (ID: ${data.commandId})`, "success");
+            setTimeout(checkServerStatus, 1400);
+        } else {
+            showStatus(`❌ ${data.error || "ошибка сервера"}`, "error");
+        }
+    } catch (err) {
+        showStatus(`❌ ${err.message}`, "error");
+    } finally {
+        isSending = false;
+    }
+}
+
+function sendCustomCommand() {
+    const action = document.getElementById('customAction').value.trim();
+    let value = document.getElementById('customValue').value.trim();
+
+    if (!action) {
+        showStatus("Введите название команды", "error");
+        return;
+    }
+
+    try {
+        if (value && (value.startsWith('{') || value.startsWith('['))) {
+            value = JSON.parse(value);
+        }
+    } catch {}
+
+    sendCommand(action, value || null);
+}
+
+function showStatus(message, type = "") {
+    statusElement.innerHTML = `<p class="${type}">${message}</p>`;
+}
+</script>
 </body>
 </html>
